@@ -1,0 +1,122 @@
+/* index.css */
+
+/* Resetting some default browser margins and paddings */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body styles */
+body {
+  font-family: Arial, sans-serif;  /* Use a clean font for your app */
+  line-height: 1.6;
+  background-color: #f4f4f4;  /* Light background color for the app */
+  color: #333;  /* Text color */
+  padding: 20px; /* Add some padding around the edges */
+  display: flex;
+  justify-content: center; /* Centers the content horizontally */
+  align-items: center; /* Centers the content vertically */
+  height: 100vh; /* Full viewport height */
+  flex-direction: column; /* Ensures the body content stacks */
+}
+
+/* Headings */
+h1, h2, h3 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  /* A clean, modern font for headings */
+}
+
+/* Heading styling */
+h2 {
+  color: #333;  /* Heading color */
+  margin-bottom: 15px;  /* Spacing between heading and following content */
+}
+
+/* Style form elements */
+input, select, button {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* Button styles */
+button {
+  cursor: pointer;
+  background-color: #4CAF50; /* Green color for submit buttons */
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+/* Button hover effects */
+button:hover {
+  background-color: #45a049; /* Darker green when hovered */
+}
+
+/* Responsive table styles */
+table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+/* Link styles */
+a {
+  text-decoration: none;
+  color: #007bff;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Reset Button Styles */
+button[type="button"] {
+  background-color: #f44336; /* Red color for Reset */
+  color: white;
+  border: 1px solid #f44336;
+  transition: background-color 0.3s ease;
+}
+
+button[type="button"]:hover {
+  background-color: #d32f2f; /* Darker red when hovered */
+}
+
+/* Centered Form Styling */
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column; /* Vertical stacking of the form elements */
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slight shadow for better visibility */
+  max-width: 400px; /* Maximum width of the form */
+  width: 100%; /* Allow the form to be responsive */
+  margin-top: 20px; /* Space from the content */
+}
+
+/* Center Content Inside Form */
+form {
+  width: 100%; /* Ensure the form occupies full width of the container */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+input,
+button {
+  width: 100%; /* Make inputs and buttons take full width within the form */
+}
+
