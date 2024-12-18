@@ -91,7 +91,7 @@ function App() {
           <button type="submit">Submit</button>
         </form>
 
-        {/* Box with "View Employee List" button */}
+        {/* Box with "View Employee List" buttons*/}
         <div style={viewEmployeeListBox}>
           <Link to="/employee-list" style={linkStyle}>View Employee List</Link>
         </div>
