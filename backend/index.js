@@ -1,35 +1,22 @@
-require("dotenv").config(); // Load environment variables
-
 const express = require("express");
-const bodyParser = require("body-parser"); // Parse client data
-const cors = require("cors"); // Enable frontend-backend interaction
+const bodyParser = require("body-parser");
+const cors = require("cors");
 const { Pool } = require("pg");
 
 const app = express();
-const port = process.env.SERVER_PORT || 5000; // Use environment variable for port
+const port = process.env.PORT || 5000;
 
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
 
-// PostgreSQL Pool Configuration using environment variables
+// PostgreSQL Pool Configuration
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // Use DATABASE_URL in production
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false, // Enable SSL for production
-});
-
-// Test database connection
-pool.connect((err, client, release) => {
-  if (err) {
-    return console.error('Error acquiring client', err.stack);
-  }
-  client.query('SELECT NOW()', (err, result) => {
-    release();
-    if (err) {
-      return console.error('Error executing query', err.stack);
-    }
-    console.log('Database connected:', result.rows);
-  });
+  user: "postgres",
+  host: "localhost",
+  database: "form",
+  password: "Avimohana.04",
+  port: 5432,
 });
 
 // Routes
@@ -48,8 +35,7 @@ app.get("/api/employees", async (req, res) => {
 // Add Employee
 app.post("/api/employees", async (req, res) => {
   const { first_name, last_name, employee_id, email, phone_number, department, date_of_joining, role } = req.body;
-
-  const fullName = `${first_name} ${last_name}`; // Combine first and last name
+  const fullName = `${first_name} ${last_name}`;
 
   try {
     const query = `
@@ -71,9 +57,18 @@ app.post("/api/employees", async (req, res) => {
 // Edit Employee
 app.put("/api/employees/:id", async (req, res) => {
   const { id } = req.params;
-  const { first_name, last_name, employee_id, email, phone_number, department, date_of_joining, role } = req.body;
+  const {
+    first_name,
+    last_name,
+    employee_id,
+    email,
+    phone_number,
+    department,
+    date_of_joining,
+    role,
+  } = req.body;
 
-  const fullName = `${first_name} ${last_name}`; // Combine First Name and Last Name
+  const fullName = `${first_name} ${last_name}`;
 
   try {
     const result = await pool.query(
@@ -81,7 +76,16 @@ app.put("/api/employees/:id", async (req, res) => {
        SET name = $1, employee_id = $2, email = $3, phone_number = $4, department = $5, date_of_joining = $6, role = $7
        WHERE id = $8
        RETURNING *`,
-      [fullName, employee_id, email, phone_number, department, date_of_joining, role, id]
+      [
+        fullName,
+        employee_id,
+        email,
+        phone_number,
+        department,
+        date_of_joining,
+        role,
+        id,
+      ]
     );
 
     if (result.rows.length === 0) {
@@ -112,7 +116,6 @@ app.delete("/api/employees/:id", async (req, res) => {
   }
 });
 
-// Start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });

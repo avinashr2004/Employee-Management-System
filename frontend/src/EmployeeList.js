@@ -1,24 +1,28 @@
-import React, { useState, useEffect } from "react";//useeffect fetch data usestae for count fucntion
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 function EmployeeList() {
   const [employees, setEmployees] = useState([]);
-  const [employeeCount, setEmployeeCount] = useState(0); // New state for employee count
-  const [editEmployee, setEditEmployee] = useState(null);//to update th table
+  const [employeeCount, setEmployeeCount] = useState(0);
+  const [editEmployee, setEditEmployee] = useState(null);
   const [password, setPassword] = useState("");
   const [passwordCorrect, setPasswordCorrect] = useState(false);
   const [error, setError] = useState("");
+  const [searchId, setSearchId] = useState("");
+  const [filteredEmployee, setFilteredEmployee] = useState(null);
+  const [filterDepartment, setFilterDepartment] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [filterDate, setFilterDate] = useState("");
 
-  const validPassword = "1234"; // Correct password
+  const validPassword = "1234";
 
-  // Fetch employee data when password is correct
   useEffect(() => {
     if (passwordCorrect) {
       async function fetchEmployees() {
         try {
           const response = await axios.get("http://localhost:5000/api/employees");
           setEmployees(response.data);
-          setEmployeeCount(response.data.length); // Set employee count
+          setEmployeeCount(response.data.length);
         } catch (error) {
           console.error("Error fetching employees", error);
         }
@@ -40,111 +44,210 @@ function EmployeeList() {
     try {
       await axios.delete(`http://localhost:5000/api/employees/${id}`);
       setEmployees(employees.filter((employee) => employee.id !== id));
-      setEmployeeCount(employeeCount - 1); // Decrease employee count
+      setEmployeeCount(employeeCount - 1);
     } catch (error) {
       console.error("Error deleting employee", error);
     }
   };
 
   const handleEdit = (employee) => {
-    setEditEmployee({ ...employee }); // Pre-fill the data into the edit form
+    setEditEmployee({ ...employee });
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     const updatedEmployee = {
       ...editEmployee,
-      name: `${editEmployee.first_name} ${editEmployee.last_name}`, // Combine first and last name
+      name: `${editEmployee.first_name} ${editEmployee.last_name}`,
     };
     try {
       const response = await axios.put(
         `http://localhost:5000/api/employees/${updatedEmployee.id}`,
         updatedEmployee
       );
-      // Update the employee list with the newly updated employee
       setEmployees(
         employees.map((emp) =>
           emp.id === updatedEmployee.id ? updatedEmployee : emp
         )
       );
-      setEditEmployee(null); // Close the edit form on success
+      setEditEmployee(null);
     } catch (error) {
       console.error("Error updating employee", error);
     }
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    const updatedEmployee = {
-      ...editEmployee,
-      name: `${editEmployee.first_name} ${editEmployee.last_name}`, // Combine first and last name
-    };
+  const handleSearch = () => {
+    const employee = employees.find((emp) => emp.employee_id === searchId);
+    setFilteredEmployee(employee || null);
+  };
 
-    try {
-      const response = await axios.put(
-        `http://localhost:5000/api/employees/${updatedEmployee.id}`,
-        updatedEmployee
-      );
-      // Update employee list with the newly updated employee
-      setEmployees(
-        employees.map((emp) =>
-          emp.id === updatedEmployee.id ? updatedEmployee : emp
-        )
-      );
-      setEmployeeCount(employees.length); // Set the updated employee count
-    } catch (error) {
-      console.error("Error updating employee", error);
+  const handleFilter = () => {
+    let filtered = employees;
+    if (filterDepartment) {
+      filtered = filtered.filter(emp => emp.department === filterDepartment);
     }
+    if (filterRole) {
+      filtered = filtered.filter(emp => emp.role === filterRole);
+    }
+    if (filterDate) {
+      filtered = filtered.filter(emp => new Date(emp.date_of_joining).toLocaleDateString() === new Date(filterDate).toLocaleDateString());
+    }
+    setFilteredEmployee(filtered.length > 0 ? filtered : null);
   };
 
   return (
-    <div>
+    <div style={containerStyle}>
       {passwordCorrect ? (
         <>
-          {/* Employee count display */}
           <div style={countStyle}>
             Total Employees: {employeeCount}
           </div>
 
           <h2>Employee List</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Employee ID</th>
-                <th>Email</th>
-                <th>Phone Number</th>
-                <th>Department</th>
-                <th>Role</th>
-                <th>Date of Joining</th> {/* Ensure Date of Joining column exists */}
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map((emp) => (
-                <tr key={emp.id}>
-                  <td>{emp.name}</td>
-                  <td>{emp.employee_id}</td>
-                  <td>{emp.email}</td>
-                  <td>{emp.phone_number}</td>
-                  <td>{emp.department}</td>
-                  <td>{emp.role}</td>
 
-                  {/* Display Date of Joining properly */}
-                  <td>
-                    {/* Check if date_of_joining exists and format it properly */}
-                    {emp.date_of_joining
-                      ? new Date(emp.date_of_joining).toLocaleDateString() // Formats the date
-                      : "N/A"}
-                  </td> 
-                  <td>
-                    <button onClick={() => handleEdit(emp)}>Edit</button>
-                    <button onClick={() => handleDelete(emp.id)}>Delete</button>
-                  </td>
+          {/* Search and Filter section */}
+          <div style={searchContainerStyle}>
+            <input
+              type="text"
+              placeholder="Search by Employee ID"
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
+              style={searchInputStyle}
+            />
+            <button onClick={handleSearch} style={searchButtonStyle}>Search</button>
+          </div>
+
+          <div style={filterContainerStyle}>
+            <select
+              value={filterDepartment}
+              onChange={(e) => setFilterDepartment(e.target.value)}
+              style={filterInputStyle}
+            >
+              <option value="">Filter by Department</option>
+              <option value="HR">HR</option>
+              <option value="Finance">Finance</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Sales">Sales</option>
+              <option value="R&D">R&D</option>
+            </select>
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              style={filterInputStyle}
+            >
+              <option value="">Filter by Role</option>
+              <option value="Manager">Manager</option>
+              <option value="Developer">Developer</option>
+              <option value="Designer">Designer</option>
+              <option value="Tester">Tester</option>
+            </select>
+            <input
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              style={filterInputStyle}
+            />
+            <button onClick={handleFilter} style={filterButtonStyle}>Filter</button>
+          </div>
+
+          <div style={tableContainerStyle}>
+            {filteredEmployee ? (
+              <div>
+                <h3>Search Result</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Employee ID</th>
+                      <th>Email</th>
+                      <th>Phone Number</th>
+                      <th>Department</th>
+                      <th>Role</th>
+                      <th>Date of Joining</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.isArray(filteredEmployee) ? filteredEmployee.map(emp => (
+                      <tr key={emp.id}>
+                        <td>{emp.name}</td>
+                        <td>{emp.employee_id}</td>
+                        <td>{emp.email}</td>
+                        <td>{emp.phone_number}</td>
+                        <td>{emp.department}</td>
+                        <td>{emp.role}</td>
+                        <td>
+                          {emp.date_of_joining
+                            ? new Date(emp.date_of_joining).toLocaleDateString()
+                            : "N/A"}
+                        </td>
+                        <td>
+                          <button onClick={() => handleEdit(emp)}>Edit</button>
+                          <button onClick={() => handleDelete(emp.id)}>Delete</button>
+                        </td>
+                      </tr>
+                    )) : (
+                      <tr>
+                        <td>{filteredEmployee.name}</td>
+                        <td>{filteredEmployee.employee_id}</td>
+                        <td>{filteredEmployee.email}</td>
+                        <td>{filteredEmployee.phone_number}</td>
+                        <td>{filteredEmployee.department}</td>
+                        <td>{filteredEmployee.role}</td>
+                        <td>
+                          {filteredEmployee.date_of_joining
+                            ? new Date(filteredEmployee.date_of_joining).toLocaleDateString()
+                            : "N/A"}
+                        </td>
+                        <td>
+                          <button onClick={() => handleEdit(filteredEmployee)}>Edit</button>
+                          <button onClick={() => handleDelete(filteredEmployee.id)}>Delete</button>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p>No employee found with the given criteria.</p>
+            )}
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Employee ID</th>
+                  <th>Email</th>
+                  <th>Phone Number</th>
+                  <th>Department</th>
+                  <th>Role</th>
+                  <th>Date of Joining</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {employees.map((emp) => (
+                  <tr key={emp.id}>
+                    <td>{emp.name}</td>
+                    <td>{emp.employee_id}</td>
+                    <td>{emp.email}</td>
+                    <td>{emp.phone_number}</td>
+                    <td>{emp.department}</td>
+                    <td>{emp.role}</td>
+                    <td>
+                      {emp.date_of_joining
+                        ? new Date(emp.date_of_joining).toLocaleDateString()
+                        : "N/A"}
+                    </td>
+                    <td>
+                      <button onClick={() => handleEdit(emp)}>Edit</button>
+                      <button onClick={() => handleDelete(emp.id)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {editEmployee && (
             <div>
@@ -236,16 +339,62 @@ function EmployeeList() {
   );
 }
 
+const containerStyle = {
+  height: "100vh",
+  overflowY: "auto",
+};
+
 const countStyle = {
-  position: "absolute",
-  top: "10px",
-  right: "10px",
+  position: "sticky",
+  top: "0",
   backgroundColor: "#f8f9fa",
   padding: "10px",
   borderRadius: "5px",
   fontSize: "16px",
   fontWeight: "bold",
   border: "1px solid #ddd",
+  zIndex: 1,
+};
+
+const searchContainerStyle = {
+  display: "flex",
+  justifyContent: "flex-end",
+  alignItems: "center",
+  marginBottom: "20px",
+};
+
+const searchInputStyle = {
+  marginRight: "10px",
+  padding: "5px",
+  fontSize: "16px",
+  width: "25%",
+};
+
+const searchButtonStyle = {
+  padding: "5px 10px",
+  fontSize: "14px",
+};
+
+const filterContainerStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: "20px",
+};
+
+const filterInputStyle = {
+  marginRight: "10px",
+  padding: "5px",
+  fontSize: "16px",
+};
+
+const filterButtonStyle = {
+  padding: "5px 10px",
+  fontSize: "14px",
+};
+
+const tableContainerStyle = {
+  overflowY: "auto",
 };
 
 export default EmployeeList;
