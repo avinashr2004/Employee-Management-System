@@ -1,8 +1,8 @@
 require("dotenv").config(); // Load environment variables
 
 const express = require("express");
-const bodyParser = require("body-parser"); // Client data is parsed
-const cors = require("cors"); // Frontend-backend interaction
+const bodyParser = require("body-parser"); // Parse client data
+const cors = require("cors"); // Enable frontend-backend interaction
 const { Pool } = require("pg");
 
 const app = express();
@@ -14,11 +14,8 @@ app.use(cors());
 
 // PostgreSQL Pool Configuration using environment variables
 const pool = new Pool({
-  user: process.env.DB_USER,       // Database username
-  host: process.env.DB_HOST,       // Database host
-  database: process.env.DB_NAME,   // Database name
-  password: process.env.DB_PASSWORD, // Database password
-  port: process.env.DB_PORT,       // Database port
+  connectionString: process.env.DATABASE_URL, // Use DATABASE_URL in production
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false, // Enable SSL for production
 });
 
 // Routes
@@ -34,7 +31,7 @@ app.get("/api/employees", async (req, res) => {
   }
 });
 
-// Add Employee (existing route)
+// Add Employee
 app.post("/api/employees", async (req, res) => {
   const { first_name, last_name, employee_id, email, phone_number, department, date_of_joining, role } = req.body;
 
@@ -60,16 +57,7 @@ app.post("/api/employees", async (req, res) => {
 // Edit Employee
 app.put("/api/employees/:id", async (req, res) => {
   const { id } = req.params;
-  const {
-    first_name,
-    last_name,
-    employee_id,
-    email,
-    phone_number,
-    department,
-    date_of_joining,
-    role,
-  } = req.body;
+  const { first_name, last_name, employee_id, email, phone_number, department, date_of_joining, role } = req.body;
 
   const fullName = `${first_name} ${last_name}`; // Combine First Name and Last Name
 
@@ -79,16 +67,7 @@ app.put("/api/employees/:id", async (req, res) => {
        SET name = $1, employee_id = $2, email = $3, phone_number = $4, department = $5, date_of_joining = $6, role = $7
        WHERE id = $8
        RETURNING *`,
-      [
-        fullName,
-        employee_id,
-        email,
-        phone_number,
-        department,
-        date_of_joining,
-        role,
-        id,
-      ]
+      [fullName, employee_id, email, phone_number, department, date_of_joining, role, id]
     );
 
     if (result.rows.length === 0) {
@@ -119,7 +98,7 @@ app.delete("/api/employees/:id", async (req, res) => {
   }
 });
 
-// Start Server
+// Start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
